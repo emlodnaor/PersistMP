@@ -23,9 +23,21 @@ function handlePersistMPOnPlayerDisconnect(player_id)
     updateVehicleInfo(player_id)
 end
 
+function handlePersistMPonVehicleSpawn(player_id) 
+    -- player_id: number
+    updateVehicleInfo(player_id)
+end
+
+function handlePersistMPonVehicleEdited(player_id) 
+    -- player_id: number
+    updateVehicleInfo(player_id)
+end
+
 function updateVehicleInfo(player_id)
 	local playerVehicles = MP.GetPlayerVehicles(player_id)
+    if playerVehicles == nil then return end
     local beamMPid = MP.GetPlayerIdentifiers(player_id).beammp
+    if beamMPid == nil then return end
     PersistMPInfo[beamMPid] = {}
     PersistMPInfo[beamMPid].Vehicles = {}
     
@@ -38,6 +50,8 @@ end
 
 function onInit()
     MP.RegisterEvent("onPlayerJoin", "handlePersistMPOnPlayerJoin")
+    MP.RegisterEvent("onVehicleSpawn", "handlePersistMPOnPlayerJoin")
+    MP.RegisterEvent("onVehicleEdited", "handlePersistMPOnPlayerJoin")
     MP.RegisterEvent("onPlayerDisconnect", "handlePersistMPOnPlayerDisconnect")
     print("PersistMP loaded...")
 end
