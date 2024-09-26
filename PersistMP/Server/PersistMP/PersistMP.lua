@@ -10,27 +10,30 @@
 
 local PersistMPInfo = {}
 
-function handlePersistMPOnPlayerJoin(player_id) 
+function handlePersistMP_RequestStoredInfo(player_id) 
     -- player_id: number
     local beamMPid = MP.GetPlayerIdentifiers(player_id).beammp
     if PersistMPInfo[beamMPid] ~= nil then
-        MP.TriggerClientEventJson(player_id, "onPersistMPJoin", PersistMPInfo[beamMPid])
+        MP.TriggerClientEventJson(player_id, "onPersistMP_GetAndApplyStoredInfo", PersistMPInfo[beamMPid])
     end
 end
 
 function handlePersistMPOnPlayerDisconnect(player_id) 
     -- player_id: number
     updateVehicleInfo(player_id)
+    updateStoredInfo()
 end
 
 function handlePersistMPonVehicleSpawn(player_id) 
     -- player_id: number
     updateVehicleInfo(player_id)
+    updateStoredInfo()
 end
 
 function handlePersistMPonVehicleEdited(player_id) 
     -- player_id: number
     updateVehicleInfo(player_id)
+    updateStoredInfo()
 end
 
 function updateVehicleInfo(player_id)
@@ -47,20 +50,29 @@ function updateVehicleInfo(player_id)
         PersistMPInfo[beamMPid].Vehicles[key].positionRaw = MP.GetPositionRaw(player_id, key)
     end
     
-    updateStoredInfo()
+    
 end
 
 function onInit()
-    MP.RegisterEvent("onPlayerJoin", "handlePersistMPOnPlayerJoin")
+    MP.RegisterEvent("PersistMP_RequestStoredInfo", "handlePersistMP_RequestStoredInfo")
     MP.RegisterEvent("onVehicleSpawn", "handlePersistMPOnPlayerJoin")
     MP.RegisterEvent("onVehicleEdited", "handlePersistMPOnPlayerJoin")
     MP.RegisterEvent("onPlayerDisconnect", "handlePersistMPOnPlayerDisconnect")
+    MP.RegisterEvent("onShutdown", "handleOnShutdown")
     PersistMPInfo = restorePersistInfo()
     print("PersistMP loaded...")
 end
 
-function onShutdown()
+function handleOnShutdown()
+    storeAllActiveUsers()
     updateStoredInfo()
+end
+
+function storeAllActiveUsers()
+    local players = MP.GetPlayers()
+    for player_id, username in pairs(players) do
+        updateVehicleInfo(player_id)
+    end
 end
 
 function updateStoredInfo()
@@ -87,6 +99,5 @@ function restorePersistInfo()
     local content = file:read("*all")
     file:close()
     local contentTable = Util.JsonDecode(content)
-    return contentTable
-    
+    return contentTable    
 end
