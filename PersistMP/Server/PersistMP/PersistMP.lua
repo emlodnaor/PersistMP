@@ -10,7 +10,7 @@
 
 local PersistMPInfo = {}
 
-function handlePersistMP_RequestStoredInfo(player_id) 
+local function handlePersistMP_RequestStoredInfo(player_id) 
     -- player_id: number
     local beamMPid = MP.GetPlayerIdentifiers(player_id).beammp
     if PersistMPInfo[beamMPid] ~= nil then
@@ -18,25 +18,25 @@ function handlePersistMP_RequestStoredInfo(player_id)
     end
 end
 
-function handlePersistMPOnPlayerDisconnect(player_id) 
+local function handlePersistMPOnPlayerDisconnect(player_id) 
     -- player_id: number
     updateVehicleInfo(player_id)
     updateStoredInfo()
 end
 
-function handlePersistMPonVehicleSpawn(player_id) 
+local function handlePersistMPonVehicleSpawn(player_id) 
     -- player_id: number
     updateVehicleInfo(player_id)
     updateStoredInfo()
 end
 
-function handlePersistMPonVehicleEdited(player_id) 
+local function handlePersistMPonVehicleEdited(player_id) 
     -- player_id: number
     updateVehicleInfo(player_id)
     updateStoredInfo()
 end
 
-function updateVehicleInfo(player_id)
+local function updateVehicleInfo(player_id)
 	local playerVehicles = MP.GetPlayerVehicles(player_id)
     if playerVehicles == nil then return end
     local beamMPid = MP.GetPlayerIdentifiers(player_id).beammp
@@ -63,19 +63,19 @@ function onInit()
     print("PersistMP loaded...")
 end
 
-function handleOnShutdown()
+local function handleOnShutdown()
     storeAllActiveUsers()
     updateStoredInfo()
 end
 
-function storeAllActiveUsers()
+local function storeAllActiveUsers()
     local players = MP.GetPlayers()
     for player_id, username in pairs(players) do
         updateVehicleInfo(player_id)
     end
 end
 
-function updateStoredInfo()
+local function updateStoredInfo()
 	persistInfo = Util.JsonEncode(PersistMPInfo)
     -- Open the file for writing
     local file = io.open("PersistMPInfo.json", "w")
@@ -91,7 +91,7 @@ function updateStoredInfo()
     end
 end
 
-function restorePersistInfo()
+local function restorePersistInfo()
     local file = io.open("PersistMPInfo.json", "r")
     if file == nil then
         return {}        
