@@ -8,32 +8,32 @@
 
 -- Stores and restores player location and vehicle between sessions.
 
-local PersistMPInfo = {}
+local PersistMP_Info = {}
 
-function handlePersistMP_RequestStoredInfo(player_id) 
+function handle_PersistMP_RequestStoredInfo(player_id) 
     -- player_id: number
     local beamMPid = MP.GetPlayerIdentifiers(player_id).beammp
-    if PersistMPInfo[beamMPid] ~= nil then
-        MP.TriggerClientEventJson(player_id, "onPersistMP_GetAndApplyStoredInfo", PersistMPInfo[beamMPid])
+    if PersistMP_Info[beamMPid] ~= nil then
+        MP.TriggerClientEventJson(player_id, "onPersistMP_GetAndApplyStoredInfo", PersistMP_Info[beamMPid])
     end
 end
 
-function handlePersistMPOnPlayerDisconnect(player_id) 
+function handle_PersistMP_OnPlayerDisconnect(player_id) 
     -- player_id: number
     PersistMPupdateVehicleInfo(player_id)
-    PersistMPupdateStoredInfo()
+    PersistMP_updateStoredInfo()
 end
 
 function handlePersistMPonVehicleSpawn(player_id) 
     -- player_id: number
     PersistMPupdateVehicleInfo(player_id)
-    PersistMPupdateStoredInfo()
+    PersistMP_updateStoredInfo()
 end
 
 function handlePersistMPonVehicleEdited(player_id) 
     -- player_id: number
     PersistMPupdateVehicleInfo(player_id)
-    PersistMPupdateStoredInfo()
+    PersistMP_updateStoredInfo()
 end
 
 function PersistMPupdateVehicleInfo(player_id)
@@ -41,42 +41,49 @@ function PersistMPupdateVehicleInfo(player_id)
     if playerVehicles == nil then return end
     local beamMPid = MP.GetPlayerIdentifiers(player_id).beammp
     if beamMPid == nil then return end
-    PersistMPInfo[beamMPid] = {}
-    PersistMPInfo[beamMPid].Vehicles = {}
+    PersistMP_Info[beamMPid] = {}
+    PersistMP_Info[beamMPid].Vehicles = {}
     
     for key, value in pairs(playerVehicles) do
-        PersistMPInfo[beamMPid].Vehicles[key] = {}
-        PersistMPInfo[beamMPid].Vehicles[key].config = Util.JsonDecode(value:match("{.*}"))
-        PersistMPInfo[beamMPid].Vehicles[key].positionRaw = MP.GetPositionRaw(player_id, key)
+        PersistMP_Info[beamMPid].Vehicles[key] = {}
+        PersistMP_Info[beamMPid].Vehicles[key].config = Util.JsonDecode(value:match("{.*}"))
+        PersistMP_Info[beamMPid].Vehicles[key].positionRaw = MP.GetPositionRaw(player_id, key)
     end
-    
-    
+end
+
+local function tableCount(tbl)
+    local count = 0
+    for _ in pairs(tbl) do
+        count = count + 1
+    end
+    return count
 end
 
 function onInit()
-    MP.RegisterEvent("PersistMP_RequestStoredInfo", "handlePersistMP_RequestStoredInfo")
-    MP.RegisterEvent("onVehicleSpawn", "handlePersistMPOnPlayerJoin")
-    MP.RegisterEvent("onVehicleEdited", "handlePersistMPOnPlayerJoin")
-    MP.RegisterEvent("onPlayerDisconnect", "handlePersistMPOnPlayerDisconnect")
-    MP.RegisterEvent("onShutdown", "handlePersistMPOnShutdown")
-    PersistMPInfo = restorePersistInfo()
-    print("PersistMP loaded...")
+    MP.RegisterEvent("PersistMP_RequestStoredInfo", "handle_PersistMP_RequestStoredInfo")
+    -- MP.RegisterEvent("onVehicleSpawn", "handle_PersistMP_OnPlayerJoin")
+    -- MP.RegisterEvent("onVehicleEdited", "handle_PersistMP_OnPlayerJoin")
+    MP.RegisterEvent("onPlayerDisconnect", "handle_PersistMP_OnPlayerDisconnect")
+    MP.RegisterEvent("onShutdown", "handle_PersistMP_OnShutdown")
+    PersistMP_Info = restorePersistMPInfo()
+    print("PersistMP mod loaded.")
+    print(tableCount(PersistMP_Info) .. " PersistMP users found...")
 end
 
-function handlePersistMPOnShutdown()
-    PersistMPstoreAllActiveUsers()
-    PersistMPupdateStoredInfo()
+function handle_PersistMP_OnShutdown()
+    PersistMP_storeAllActiveUsers()
+    PersistMP_updateStoredInfo()
 end
 
-function PersistMPstoreAllActiveUsers()
+function PersistMP_storeAllActiveUsers()
     local players = MP.GetPlayers()
     for player_id, username in pairs(players) do
         PersistMPupdateVehicleInfo(player_id)
     end
 end
 
-function PersistMPupdateStoredInfo()
-	persistInfo = Util.JsonEncode(PersistMPInfo)
+function PersistMP_updateStoredInfo()
+	local persistInfo = Util.JsonEncode(PersistMP_Info)
     -- Open the file for writing
     local file = io.open("PersistMPInfo.json", "w")
 
@@ -91,7 +98,7 @@ function PersistMPupdateStoredInfo()
     end
 end
 
-function restorePersistInfo()
+function restorePersistMPInfo()
     local file = io.open("PersistMPInfo.json", "r")
     if file == nil then
         return {}        
