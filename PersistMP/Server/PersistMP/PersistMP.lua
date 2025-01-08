@@ -36,7 +36,7 @@ function handlePersistMPonVehicleEdited(player_id)
     PersistMPupdateStoredInfo()
 end
 
-function updateVehicleInfo(player_id)
+function PersistMPupdateVehicleInfo(player_id)
 	local playerVehicles = MP.GetPlayerVehicles(player_id)
     if playerVehicles == nil then return end
     local beamMPid = MP.GetPlayerIdentifiers(player_id).beammp
