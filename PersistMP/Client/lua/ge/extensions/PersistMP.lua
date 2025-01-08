@@ -17,14 +17,19 @@ local function onWorldReadyState(worldReadyState)
 end
 
 function onPersistMP_GetAndApplyStoredInfo(json)
-	data = jsonDecode(json)
+	local data = jsonDecode(json)
 	if data ~= nil then
 		local vehName = data.Vehicles[1].config.vcf.model
 		local vehConfigFile = data.Vehicles[1].config.vcf.partConfigFilename
 		local pos = data.Vehicles[1].positionRaw.pos
 		local rot = data.Vehicles[1].positionRaw.rot
 		core_vehicles.spawnNewVehicle(vehName, {config = vehConfigFile})
-		be:getPlayerVehicle(0):setPositionRotation( pos[1], pos[2], pos[3], rot[1], rot[2], rot[3], rot[4]) 
+		if be:getPlayerVehicle(0) == nil then
+			print("unable to spawn car on first try...")
+		end
+		if be:getPlayerVehicle(0) then
+			be:getPlayerVehicle(0):setPositionRotation( pos[1], pos[2], pos[3], rot[1], rot[2], rot[3], rot[4]) 
+		end
 	end
 end
 
