@@ -28,7 +28,8 @@ function onPersistMP_GetAndApplyStoredInfo(json)
 			print("unable to spawn car on first try...")
 		end
 		if be:getPlayerVehicle(0) then
-			be:getPlayerVehicle(0):setPositionRotation( pos[1], pos[2], pos[3], rot[1], rot[2], rot[3], rot[4]) 
+			be:getPlayerVehicle(0):setPositionRotation( pos[1], pos[2], pos[3], rot[1], rot[2], rot[3], rot[4])
+			core_camera.setByName(0, 'orbit')
 		end
 	end
 end
